@@ -5,7 +5,7 @@
 package ejemplo2sumativa2;
 import java.util.Scanner;
 import java.util.Timer;
-import java.util.TimerTask; 
+import java.util.TimerTask;
 
 /**
  *
@@ -14,12 +14,12 @@ import java.util.TimerTask;
 
 public class Ejemplo2sumativa2 {
 
-static String[] menuCompras = {"[1].Ver Sala", "[2].Reservar Entrada ", "[3]. Comprar Entrada ", "[4]. Verificar Disponibilidad", "[5]. Modificar su compra", "[6].Salir"};
+static String[] menuCompras = {"[1]. Ver Sala", "[2]. Reservar Entrada ", "[3]. Comprar Entrada ", "[4]. Verificar Disponibilidad", "[5]. Modificar su compra","[6]. Generar boleta de compra", "[7].Salir"};
 static String[] filaAsientos = {"A", "B", "C", "D", "E", "F", "G", "H"};
 static String[][] teatroMoro = new String[filaAsientos.length][8];
 static Scanner teclado = new Scanner(System.in);
 static String asientoReservado = null;
-static Timer timer = new Timer();
+static Timer timerReserva = new Timer();
 static boolean reservaEnProceso = false;
 
 
@@ -32,9 +32,7 @@ static boolean reservaEnProceso = false;
         
         abrirTeatro();       
         int menuPrincipal;
-        boolean opcion;
-        String asiento;
-
+       
         do {
             for (String string : menuCompras) {   //mostrar el menu con un ciclo for
                 System.out.println(string);
@@ -51,12 +49,15 @@ static boolean reservaEnProceso = false;
                    comprarEntrada();
                 }
                 case 4 -> {
-
+                   verDisponibilidad();
                 }
                 case 5 -> {
 
                 }
                 case 6 -> {
+                    
+                }
+                case 7 -> {
                     System.out.println("Gracias por visitar nuestro sitio, vuelve pronto!");
                 }
                 default -> {
@@ -65,7 +66,7 @@ static boolean reservaEnProceso = false;
                 }
             }
             System.out.println("\n");
-        } while (menuPrincipal != 6);
+        } while (menuPrincipal != 7);
 
     } // cierre del main
         
@@ -117,6 +118,7 @@ static boolean reservaEnProceso = false;
         teclado.nextLine();
         
         //Iniciaremos el temporizador 
+        timerReserva = new Timer();
         reservaEnProceso = true;
         reservaAsiento = "";                
         asientoReservado = reservaAsiento; 
@@ -141,8 +143,8 @@ static boolean reservaEnProceso = false;
             }
         };
         //tareas
-        timer.schedule(avisoTiempo, 15000);
-        timer.schedule(cancelarReserva, 30000);
+        timerReserva.schedule(avisoTiempo, 15000);
+        timerReserva.schedule(cancelarReserva, 30000);
         
         //continuamos con la reserva
         reservaAsiento = teclado.nextLine().toUpperCase();
@@ -178,10 +180,11 @@ static boolean reservaEnProceso = false;
             if(confirmacion.equals("SI")) {
                 teatroMoro[filaReal][colReal] = "R";
                 System.out.println("Asiento reservado correctamente");
-                timer.cancel();
+                timerReserva.cancel();
+                timerReserva.purge();
                 reservaEnProceso = false;
                 System.out.println("Desea proceder a comprar este asiento? (Si/No)");
-                teclado.nextLine();
+                
                 String comprarAhora = teclado.nextLine().toUpperCase();
                 if(comprarAhora.equals("SI")) {
                     if ((teatroMoro[filaReal][colReal].equals("R"))) {
@@ -191,10 +194,11 @@ static boolean reservaEnProceso = false;
                 }
             }else {
                 System.out.println("Tu reserva ha sido cancelada");
-                timer.cancel();
+                timerReserva.cancel();
+                timerReserva.purge();
                 reservaEnProceso = false;
-                
-            }           
+            }
+            
         }   
     }      
             
@@ -230,13 +234,54 @@ static boolean reservaEnProceso = false;
         
         int colReal = numElegido - 1;
         
-        while (!(teatroMoro[filaReal][colReal].equals("L"))) {
+        if (!teatroMoro[filaReal][colReal].equals("L")) {
             System.out.println("Este asiento se encuentra reservado o vendido, por favor escoja otro asiento");
             return;
         }
+        //Pasamos la verificacion
         
         teatroMoro[filaReal][colReal] = "V"; //si el asiento elegido esta libre pasara al estado vendido
         System.out.println("Felicidades su compra se ha realizado con exito.\n Disfrute la funcion!");
-    }   
+    }
+    
+    public static void verDisponibilidad(){
+        System.out.println("Que asiento quieres verificar?. A continuacion ingrese la posicion que desea");
+        System.out.println("Ingrese su fila (A-H): ");
+        int intentos = 0;
+        String filaElegida;
+        teclado.nextLine();
+        filaElegida = teclado.nextLine().toUpperCase();
+        
+        int filaReal= -1; // para que al transformar la letra en digito calce con la posicion en la matriz
+        for (int i = 0; i < filaAsientos.length; i++) {
+            if (filaAsientos[i].equals(filaElegida)) { // validando la entrada de la letra
+                filaReal= i;
+            }                       
+        }
+        if (filaReal == -1) {
+            System.out.println("Fila invalida, ingrese nuevamente su fila entre A-H");
+            return;
+        }
+        
+        System.out.println("Ingrese numero de asiento entre 1 y 8");
+        int numElegido;
+        numElegido = teclado.nextInt();
+        while (numElegido <1 || numElegido >8) {
+            intentos++;
+            System.out.println("Numero de asiento invalido. Intente nuevamente");
+            numElegido = teclado.nextInt();
+        }
+        
+        int colReal = numElegido - 1;
+        
+        if (teatroMoro[filaReal][colReal].equals("L")) {
+            System.out.println("El asiento se encuentra libre");
+        } else {
+            System.out.println("Este asiento se encuentra ocupado");
+            
+        }
+    }
+    
+    //Modificar una venta o reserva existente
     
 }
