@@ -12,6 +12,20 @@ import java.util.TimerTask;
  *
  * @author Rodo
  */
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
+ */
+package Exp2_S6_Rodolfo_Cisterna;
+
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+
+/**
+ *
+ * @author Rodo
+ */
 public class Exp2_S6_Rodolfo_Cisterna {
 
     static String[] menuCompras = {"[1]. Ver Sala", "[2]. Reservar Entrada ", "[3]. Comprar Entrada ", "[4]. Verificar Disponibilidad", "[5]. Modificar su compra", "[6]. Generar boleta de compra", "[7].Salir"};
@@ -21,8 +35,18 @@ public class Exp2_S6_Rodolfo_Cisterna {
     static String asientoReservado = null;
     static Timer timerReserva = new Timer();
     static boolean reservaEnProceso = false;
+
+    //variables globales para registrar ventas
+    static int totalEntradasVendidas = 0; //para contar entradas vendidas
+    static double ingresoTotal = 0.0;   //total acumulado
+    static int precioEntrada = 25000;    //precio entrada general
+    static int totalAsientosReservados = 0;
+    static int[] descuentos = {10, 15};
+    static int capacidadSala = 64;
     
-    
+    //variables globales de eleccion
+    static String filaElegida;
+    static int numElegido;
 
     public static void main(String[] args) {
         // Paso 1. Funcionalidades del Menu Principal
@@ -106,6 +130,7 @@ public class Exp2_S6_Rodolfo_Cisterna {
             }
             System.out.println();
         }
+        System.out.println("\t\tLa capacidad actual de la sala es: " +capacidadSala);
         System.out.println("\n\n\t===============================================================================================================\n\t\t\t\t\t\t\tSALIDA SALA\n");
     }
 
@@ -137,8 +162,7 @@ public class Exp2_S6_Rodolfo_Cisterna {
                 if (reservaEnProceso) {
                     System.out.println("se te acabo el tiempo tu reserva se ha cancelado, comienza nuevamente");
                     reservaEnProceso = false;
-                    asientoReservado = null;
-                    return;
+                    asientoReservado = null;                    
                 }
             }
         };
@@ -158,9 +182,7 @@ public class Exp2_S6_Rodolfo_Cisterna {
             System.out.println("Fila invalida, ingrese nuevamente su fila entre A-H");
             return;
         }
-        System.out.println("Ingrese numero de asiento entre 1 y 8");
-        int numElegido;
-
+        System.out.println("Ingrese numero de asiento entre 1 y 8");   
         numElegido = teclado.nextInt();
         while (numElegido < 1 || numElegido > 8) {
             intentos++;
@@ -172,12 +194,13 @@ public class Exp2_S6_Rodolfo_Cisterna {
 
         if (!(teatroMoro[filaReal][colReal].equals("L"))) {
             System.out.println("Este asiento se encuentra reservado o vendido, por favor escoja otro asiento");
-            return;
+            
         } else {
             System.out.println("Deseas reservar este asiento? (Si/No): ");
             teclado.nextLine();
             String confirmacion = teclado.nextLine().toUpperCase();
             if (confirmacion.equals("SI")) {
+                totalAsientosReservados++;
                 teatroMoro[filaReal][colReal] = "R";
                 System.out.println("Asiento reservado correctamente");
                 timerReserva.cancel();
@@ -188,7 +211,36 @@ public class Exp2_S6_Rodolfo_Cisterna {
                 String comprarAhora = teclado.nextLine().toUpperCase();
                 if (comprarAhora.equals("SI")) {
                     if ((teatroMoro[filaReal][colReal].equals("R"))) {
-                        teatroMoro[filaReal][colReal] = "V"; //si el asiento elegido esta libre pasara al estado vendido
+                        System.out.println("tienes algun descuento (Si/No): ");
+                        String descuento = teclado.nextLine().toUpperCase();
+                        while (!((descuento.equals("Si")) || (descuento.equals("No")))) {
+                            intentos++;
+                            System.out.println("Ingresa una opcion correcta, intentalo nuevamente");
+                            descuento = teclado.nextLine().toUpperCase();
+                        }
+                        if (descuento.equals("SI")) {
+                            System.out.println("Que descuento tienes Estudiante/Adulto Mayor");
+                            descuento = teclado.nextLine().toUpperCase();
+                            while (!((descuento.equals("ESTUDIANTE")) || (descuento.equals("ADULTO MAYOR")))) {
+                                intentos++;
+                                System.out.println("Ingresa una opcion correcta, intentalo nuevamente");
+                                descuento = teclado.nextLine().toUpperCase();
+                            }
+                            if (descuento.equals("ESTUDIANTE")) {
+                                System.out.println("Tu entrada es estudiante y su valor es: " + precioEntrada * 0.9);
+                                ingresoTotal += precioEntrada * 0.9;
+                            } else {
+                                System.out.println("Tu entrada es Adulto Mayor y su valor es: " + precioEntrada * 0.85);
+                                ingresoTotal += precioEntrada * 0.85;
+                            }
+                        } else {
+                            System.out.println("Tu entrada es publico general y su valor es : " + precioEntrada);
+                            ingresoTotal += precioEntrada;
+                        }
+                        teatroMoro[filaReal][colReal] = "V"; //si el asiento elegido estaba reservado pasara al estado vendido
+                        capacidadSala--;
+                        totalAsientosReservados--;
+                        totalEntradasVendidas++;
                         System.out.println("Felicidades su compra se ha realizado con exito.\n Disfrute la funcion!");
                     }
                 }
@@ -207,8 +259,7 @@ public class Exp2_S6_Rodolfo_Cisterna {
         imprimirSala();
         System.out.println("Revise asientos disponibles (marcados con una L). A continuacion ingrese la posicion que desea");
         System.out.println("Ingrese su fila (A-H): ");
-        int intentos = 0;
-        String filaElegida;
+        int intentos = 0;        
         teclado.nextLine();
         filaElegida = teclado.nextLine().toUpperCase();
 
@@ -224,7 +275,6 @@ public class Exp2_S6_Rodolfo_Cisterna {
         }
 
         System.out.println("Ingrese numero de asiento entre 1 y 8");
-        int numElegido;
         numElegido = teclado.nextInt();
         while (numElegido < 1 || numElegido > 8) {
             intentos++;
@@ -236,19 +286,45 @@ public class Exp2_S6_Rodolfo_Cisterna {
 
         if (!teatroMoro[filaReal][colReal].equals("L")) {
             System.out.println("Este asiento se encuentra reservado o vendido, por favor escoja otro asiento");
-            return;
-        }
-        //Pasamos la verificacion
 
-        teatroMoro[filaReal][colReal] = "V"; //si el asiento elegido esta libre pasara al estado vendido
-        System.out.println("Felicidades su compra se ha realizado con exito.\n Disfrute la funcion!");
+        } else {      //Pasamos la verificacion
+            System.out.println("tienes algun descuento (Si/No): ");
+            String descuento = teclado.nextLine().toUpperCase();
+            while (!((descuento.equals("Si")) || (descuento.equals("No")))) {
+                intentos++;
+                System.out.println("Ingresa una opcion correcta, intentalo nuevamente");
+                descuento = teclado.nextLine().toUpperCase();
+            }
+            if (descuento.equals("SI")) {
+                System.out.println("Que descuento tienes Estudiante/Adulto Mayor");
+                descuento = teclado.nextLine().toUpperCase();
+                while (!((descuento.equals("ESTUDIANTE")) || (descuento.equals("ADULTO MAYOR")))) {
+                    intentos++;
+                    System.out.println("Ingresa una opcion correcta, intentalo nuevamente");
+                    descuento = teclado.nextLine().toUpperCase();
+                }
+                if (descuento.equals("ESTUDIANTE")) {
+                    System.out.println("Tu entrada es estudiante y su valor es: " + precioEntrada * 0.9);
+                    ingresoTotal += precioEntrada * 0.9;
+                } else {
+                    System.out.println("Tu entrada es Adulto Mayor y su valor es: " + precioEntrada * 0.85);
+                    ingresoTotal += precioEntrada * 0.85;
+                }
+            } else {
+                System.out.println("Tu entrada es publico general y su valor es : " + precioEntrada);
+                ingresoTotal += precioEntrada;
+            }
+            teatroMoro[filaReal][colReal] = "V"; //si el asiento elegido esta libre pasara al estado vendido
+            capacidadSala--;
+            totalEntradasVendidas++;
+            System.out.println("Felicidades su compra se ha realizado con exito.\n Disfrute la funcion!");
+        }
     }
 
     public static void verDisponibilidad() {
         System.out.println("Que asiento quieres verificar?. A continuacion ingrese la posicion que desea");
         System.out.println("Ingrese su fila (A-H): ");
         int intentos = 0;
-        String filaElegida;
         teclado.nextLine();
         filaElegida = teclado.nextLine().toUpperCase();
 
@@ -264,7 +340,6 @@ public class Exp2_S6_Rodolfo_Cisterna {
         }
 
         System.out.println("Ingrese numero de asiento entre 1 y 8");
-        int numElegido;
         numElegido = teclado.nextInt();
         while (numElegido < 1 || numElegido > 8) {
             intentos++;
@@ -290,7 +365,6 @@ public class Exp2_S6_Rodolfo_Cisterna {
         String modificacionFinal;
         String modificacion = teclado.nextLine().toUpperCase();
         int intentos = 0;
-        String filaElegida;
         while (!((modificacion.equals("RESERVA")) || (modificacion.equals("VENTA")))) {
             intentos++;
             System.out.println("Ingresa una opcion correcta, intentalo nuevamente");
@@ -313,7 +387,6 @@ public class Exp2_S6_Rodolfo_Cisterna {
             }
 
             System.out.println("Ingrese numero de asiento entre 1 y 8");
-            int numElegido;
             numElegido = teclado.nextInt();
             while (numElegido < 1 || numElegido > 8) {
                 intentos++;
@@ -341,11 +414,42 @@ public class Exp2_S6_Rodolfo_Cisterna {
                         modificacionFinal = teclado.nextLine().toUpperCase();
                     }
                     if (modificacionFinal.equals("COMPRAR")) {
+                        System.out.println("tienes algun descuento (Si/No): ");
+                        String descuento = teclado.nextLine().toUpperCase();
+                        while (!((descuento.equals("Si")) || (descuento.equals("No")))) {
+                            intentos++;
+                            System.out.println("Ingresa una opcion correcta, intentalo nuevamente");
+                            descuento = teclado.nextLine().toUpperCase();
+                        }
+                        if (descuento.equals("SI")) {
+                            System.out.println("Que descuento tienes Estudiante/Adulto Mayor");
+                            descuento = teclado.nextLine().toUpperCase();
+                            while (!((descuento.equals("ESTUDIANTE")) || (descuento.equals("ADULTO MAYOR")))) {
+                                intentos++;
+                                System.out.println("Ingresa una opcion correcta, intentalo nuevamente");
+                                descuento = teclado.nextLine().toUpperCase();
+                            }
+                            if (descuento.equals("ESTUDIANTE")) {
+                                System.out.println("Tu entrada es estudiante y su valor es: " + precioEntrada * 0.9);
+                                ingresoTotal += precioEntrada * 0.9;
+                            } else {
+                                System.out.println("Tu entrada es Adulto Mayor y su valor es: " + precioEntrada * 0.85);
+                                ingresoTotal += precioEntrada * 0.85;
+                            }
+                        } else {
+                            System.out.println("Tu entrada es publico general y su valor es : " + precioEntrada);
+                            ingresoTotal += precioEntrada;
+                        }
+                        capacidadSala--;
+                        totalEntradasVendidas++;
+                        totalAsientosReservados--;
                         teatroMoro[filaReal][colReal] = "V"; //si el asiento elegido estaba reservado pasara al estado vendido
                         System.out.println("Perfecto, su compra se ha realizado con exito.\nDisfrute la funcion!");
 
                     } else {
                         teatroMoro[filaReal][colReal] = "L";
+                        capacidadSala++;
+                        totalAsientosReservados--;
                         System.out.println("Tu asiento se ha liberado con exito. \nVolveras al menu principal");
                     }
 
@@ -370,7 +474,6 @@ public class Exp2_S6_Rodolfo_Cisterna {
             }
 
             System.out.println("Ingrese numero de asiento entre 1 y 8");
-            int numElegido;
             numElegido = teclado.nextInt();
             while (numElegido < 1 || numElegido > 8) {
                 intentos++;
@@ -378,9 +481,9 @@ public class Exp2_S6_Rodolfo_Cisterna {
                 numElegido = teclado.nextInt();
             }
             int colReal = numElegido - 1;
-            
+
             if (teatroMoro[filaReal][colReal].equals("V")) {
-                System.out.println("Quieres liberar este asiento? Si/No");     
+                System.out.println("Quieres liberar este asiento? Si/No");
                 teclado.nextLine();
                 modificacion = teclado.nextLine().toUpperCase();
                 while (!((modificacion.equals("SI")) || (modificacion.equals("NO")))) {
@@ -388,17 +491,29 @@ public class Exp2_S6_Rodolfo_Cisterna {
                     System.out.println("Ingresa una opcion correcta, intentalo nuevamente");
                     modificacion = teclado.nextLine().toUpperCase();
                 }
-                if (modificacion.equals("SI")) {                
-                        teatroMoro[filaReal][colReal] = "L";
-                        System.out.println("Tu asiento se ha liberado con exito. \nVolveras al menu principal");
+                if (modificacion.equals("SI")) {
+                    capacidadSala++;
+                    totalEntradasVendidas--;
+                    teatroMoro[filaReal][colReal] = "L";
+                    System.out.println("Tu asiento se ha liberado con exito. \nVolveras al menu principal");
                 } else {
-                        System.out.println("Disfruta la funcion!");
+                    System.out.println("Disfruta la funcion!");
                 }
-                
+
             }
         }
     }
-    public static void imprimirBoleta () {
-        
+
+    public static void imprimirBoleta() {
+       System.out.println("===============================================");
+       System.out.println("        ****Boleta de compra Moro****");
+       System.out.println("===============================================");              
+       
+       System.out.println("El precio base de tu entrada es: " + precioEntrada);
+       System.out.println("Tu descuento aplicado es: " + descuentos[0] + "%");
+       System.out.println("Precio final a pagar: " + ingresoTotal);
+       
+       System.out.println("\n\n==============================================="); 
+       
     }
 }
