@@ -4,11 +4,6 @@
  */
 package eft_s9_rodolfo_cisterna;
 
-import static eft_s9_rodolfo_cisterna.TeatroMoro.galeria;
-import static eft_s9_rodolfo_cisterna.TeatroMoro.palco;
-import static eft_s9_rodolfo_cisterna.TeatroMoro.plateaAlta;
-import static eft_s9_rodolfo_cisterna.TeatroMoro.plateaBaja;
-import static eft_s9_rodolfo_cisterna.TeatroMoro.vip;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
